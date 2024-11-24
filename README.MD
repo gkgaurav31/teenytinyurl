@@ -25,6 +25,13 @@
   }
   ```
 
+- **Sample Request/Response**:
+
+  ```bash
+  curl -X POST "http://localhost:8080/api/shorten" -H "Content-Type: application/json" -d "{\"longURL\": \"https://bing.com\"}"
+  {"shortUrl":"Be3f7a","longURL":"https://bing.com"}
+  ```
+
 ---
 
 - **Endpoint**: `GET /api/fetch/{shortURL}`
@@ -38,7 +45,18 @@
   }
   ```
 
-  > If the short URL is found, the response will be an HTTP 302 status for temporary redirection, with the original long URL included in the Location header.
+  - **Sample Request/Response**:
+
+  ```bash
+  curl -X GET "http://localhost:8080/api/fetch/ABC" -I
+  HTTP/1.1 307
+  Location: https://test.com
+  Content-Type: application/json
+  Transfer-Encoding: chunked
+  Date: Sun, 24 Nov 2024 07:08:22 GMT
+  ```
+
+> If the short URL is found, the response will be an HTTP 302 status for temporary redirection, with the original long URL included in the Location header.
 
 ## THOUGHT PROCESS
 
