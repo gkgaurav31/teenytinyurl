@@ -5,8 +5,12 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
+import com.teenytinyurl.app.exception.MaximumRecordsReachedException;
+
 @Component
 public class URLMappingHashMapService implements URLMappingService{
+	
+	private static final long MAXIUMUM_RECORDS = 1000000000L;
 
 	Map<String, String> urlMapping;
 	
@@ -20,9 +24,16 @@ public class URLMappingHashMapService implements URLMappingService{
 	}
 	
 	@Override
-	public boolean save(String shortURL, String longURL) {
+	public boolean save(String shortURL, String longURL) throws MaximumRecordsReachedException {
+		
+		if(urlMapping.size() >= MAXIUMUM_RECORDS) {
+			throw new MaximumRecordsReachedException("Record limit reached. Please try later.");
+		}
+		
 		urlMapping.put(shortURL, longURL);
+		
 		return true;
+		
 	}
 
 	@Override

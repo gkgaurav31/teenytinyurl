@@ -4,6 +4,7 @@ import java.security.NoSuchAlgorithmException;
 
 import org.springframework.stereotype.Service;
 
+import com.teenytinyurl.app.exception.MaximumRecordsReachedException;
 import com.teenytinyurl.app.util.Utils;
 
 @Service
@@ -19,7 +20,7 @@ public class ShortURLHashService implements ShortURL{
     }
 
 	@Override
-	public String generateShortURL(String longURL) throws NoSuchAlgorithmException {
+	public String generateShortURL(String longURL) throws NoSuchAlgorithmException, MaximumRecordsReachedException {
         
 		String shortURL = generateHash.generateHash(longURL);
 		

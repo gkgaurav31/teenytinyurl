@@ -5,21 +5,21 @@ import java.security.NoSuchAlgorithmException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.teenytinyurl.app.service.GenerateHash;
+import com.teenytinyurl.app.exception.MaximumRecordsReachedException;
 import com.teenytinyurl.app.service.ShortURLHashService;
 import com.teenytinyurl.app.service.URLMappingService;
 import com.teenytinyurl.model.ShortURLRequest;
 import com.teenytinyurl.model.ShortURLResponse;
 
 @RestController
-@RequestMapping("/api")
+@CrossOrigin(origins = "*")
 public class ShortURLController {
 	
 	private ShortURLHashService shortURLHashService;
@@ -31,7 +31,7 @@ public class ShortURLController {
 		this.urlMappingService = urlMappingService;
 	}
 	
-	@PostMapping("/shorten")
+	@PostMapping("/api/shorten")
 	public ResponseEntity<ShortURLResponse> shortenURL(@RequestBody ShortURLRequest shortURLRequest ) {
 		
 		try {
@@ -52,20 +52,23 @@ public class ShortURLController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ShortURLResponse());
 			
+		} catch (MaximumRecordsReachedException e) {	
+			
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(new ShortURLResponse());
 		}
 
 	}
 	
-	@GetMapping("/fetch/{shortURL}")
-	public ResponseEntity<ShortURLResponse> fetchLongURL(@PathVariable("shortURL") String shortURL){
+	@GetMapping("/{shortURL}")
+	public ResponseEntity<Void> fetchLongURL(@PathVariable("shortURL") String shortURL){
 		
 		ShortURLResponse response = new ShortURLResponse();
 		
-		String longURL = urlMappingService.fetch(shortURL);
+		String longURL = "https://" + urlMappingService.fetch(shortURL);
 		
 		if(longURL.equals("")) {
-           return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ShortURLResponse());
+           return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 		}
 		
 		response.setShortUrl(shortURL);
@@ -75,9 +78,9 @@ public class ShortURLController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Location", longURL);  
 		
-		return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
+		return ResponseEntity.status(HttpStatus.FOUND)
 				.headers(headers)
-				.body(response);
+				.build();
 	}
 	
 }
